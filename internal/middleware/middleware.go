@@ -5,21 +5,12 @@ import (
 	"crypto/subtle"
 	"os"
 
-	// "regexp"
-	// "strings"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/keyauth"
 	"github.com/splorg/compstats-api/internal/config"
 )
 
-var (
-	apiKey = os.Getenv("API_KEY")
-	// serverOnlyURLs = []*regexp.Regexp{
-	// 	regexp.MustCompile("^/server/match$"),
-	// 	regexp.MustCompile("^/server/players$"),
-	// }
-)
+var apiKey = os.Getenv("API_KEY")
 
 func validateAPIKey(c *fiber.Ctx, key string) (bool, error) {
 	hashedAPIKey := sha256.Sum256([]byte(apiKey))
@@ -31,17 +22,6 @@ func validateAPIKey(c *fiber.Ctx, key string) (bool, error) {
 
 	return false, keyauth.ErrMissingOrMalformedAPIKey
 }
-
-// func apiKeyAuthFilter(c *fiber.Ctx) bool {
-// 	originalURL := strings.ToLower(c.OriginalURL())
-
-// 	for _, pattern := range serverOnlyURLs {
-// 		if pattern.MatchString(originalURL) {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
 
 type middleware struct {
 	*config.ApiConfig
@@ -67,7 +47,6 @@ func (m *middleware) SessionAuthentication(c *fiber.Ctx) error {
 
 func (m *middleware) ApiKeyAuthentication() func(*fiber.Ctx) error {
 	return keyauth.New(keyauth.Config{
-		// Next: apiKeyAuthFilter,
 		KeyLookup: "header:X-API-KEY",
 		Validator: validateAPIKey,
 	})
