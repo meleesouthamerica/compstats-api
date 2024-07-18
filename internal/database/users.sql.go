@@ -8,23 +8,19 @@ package database
 import (
 	"context"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  id,
   name,
   email,
   password,
   created_at,
   updated_at
-) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email, password, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?) RETURNING id, name, email, password, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
@@ -34,7 +30,6 @@ type CreateUserParams struct {
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
-		arg.ID,
 		arg.Name,
 		arg.Email,
 		arg.Password,
@@ -56,7 +51,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 const findUserByEmail = `-- name: FindUserByEmail :one
 SELECT id, name, email, password, created_at, updated_at
 FROM users
-WHERE email = $1
+WHERE email = ?
 LIMIT 1
 `
 

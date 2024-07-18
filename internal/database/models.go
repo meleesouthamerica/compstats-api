@@ -7,12 +7,10 @@ package database
 import (
 	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Half struct {
-	ID           int32        `json:"id"`
+	ID           int64        `json:"id"`
 	MapName      string       `json:"mapName"`
 	AttackerTeam string       `json:"attackerTeam"`
 	DefenderTeam string       `json:"defenderTeam"`
@@ -21,7 +19,7 @@ type Half struct {
 }
 
 type Player struct {
-	ID        int32        `json:"id"`
+	ID        int64        `json:"id"`
 	Name      string       `json:"name"`
 	VirtualID string       `json:"virtualId"`
 	CreatedAt time.Time    `json:"createdAt"`
@@ -29,54 +27,54 @@ type Player struct {
 }
 
 type Stat struct {
-	ID        int32        `json:"id"`
-	PlayerID  int32        `json:"playerId"`
-	HalfID    int32        `json:"halfId"`
-	Kills     int32        `json:"kills"`
-	Deaths    int32        `json:"deaths"`
-	Assists   int32        `json:"assists"`
-	Score     int32        `json:"score"`
+	ID        int64        `json:"id"`
+	PlayerID  int64        `json:"playerId"`
+	HalfID    int64        `json:"halfId"`
+	Kills     int64        `json:"kills"`
+	Deaths    int64        `json:"deaths"`
+	Assists   int64        `json:"assists"`
+	Score     int64        `json:"score"`
 	Winner    sql.NullBool `json:"winner"`
 	CreatedAt time.Time    `json:"createdAt"`
 	UpdatedAt sql.NullTime `json:"updatedAt"`
 }
 
 type Team struct {
-	ID        int32        `json:"id"`
+	ID        int64        `json:"id"`
 	Name      string       `json:"name"`
 	CreatedAt time.Time    `json:"createdAt"`
 	UpdatedAt sql.NullTime `json:"updatedAt"`
 }
 
 type Teamplayer struct {
-	ID        int32        `json:"id"`
-	PlayerID  int32        `json:"playerId"`
-	TeamID    int32        `json:"teamId"`
+	ID        int64        `json:"id"`
+	PlayerID  int64        `json:"playerId"`
+	TeamID    int64        `json:"teamId"`
 	CreatedAt time.Time    `json:"createdAt"`
 	UpdatedAt sql.NullTime `json:"updatedAt"`
 }
 
 type Tournament struct {
-	ID        int32        `json:"id"`
+	ID        int64        `json:"id"`
 	Name      string       `json:"name"`
 	CreatedAt time.Time    `json:"createdAt"`
 	UpdatedAt sql.NullTime `json:"updatedAt"`
 }
 
 type Tournamentteam struct {
-	ID           int32        `json:"id"`
-	TeamID       int32        `json:"teamId"`
-	TournamentID int32        `json:"tournamentId"`
+	ID           int64        `json:"id"`
+	TeamID       int64        `json:"teamId"`
+	TournamentID int64        `json:"tournamentId"`
 	IsWinner     sql.NullBool `json:"isWinner"`
 	CreatedAt    time.Time    `json:"createdAt"`
 	UpdatedAt    sql.NullTime `json:"updatedAt"`
 }
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
+	ID        int64     `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Password  string    `json:"-"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

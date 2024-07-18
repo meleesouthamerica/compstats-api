@@ -13,16 +13,14 @@ import (
 
 const createPlayer = `-- name: CreatePlayer :one
 INSERT INTO players (
-  id,
   name,
   virtual_id,
   created_at,
   updated_at
-) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, virtual_id, created_at, updated_at
+) VALUES (?, ?, ?, ?) RETURNING id, name, virtual_id, created_at, updated_at
 `
 
 type CreatePlayerParams struct {
-	ID        int32        `json:"id"`
 	Name      string       `json:"name"`
 	VirtualID string       `json:"virtualId"`
 	CreatedAt time.Time    `json:"createdAt"`
@@ -31,7 +29,6 @@ type CreatePlayerParams struct {
 
 func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error) {
 	row := q.db.QueryRowContext(ctx, createPlayer,
-		arg.ID,
 		arg.Name,
 		arg.VirtualID,
 		arg.CreatedAt,
@@ -51,11 +48,11 @@ func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Pla
 const findPlayerByID = `-- name: FindPlayerByID :one
 SELECT id, name, virtual_id, created_at, updated_at
 FROM players
-WHERE id = $1
+WHERE id = ?
 LIMIT 1
 `
 
-func (q *Queries) FindPlayerByID(ctx context.Context, id int32) (Player, error) {
+func (q *Queries) FindPlayerByID(ctx context.Context, id int64) (Player, error) {
 	row := q.db.QueryRowContext(ctx, findPlayerByID, id)
 	var i Player
 	err := row.Scan(
@@ -71,7 +68,7 @@ func (q *Queries) FindPlayerByID(ctx context.Context, id int32) (Player, error) 
 const findPlayerByVirtualID = `-- name: FindPlayerByVirtualID :one
 SELECT id, name, virtual_id, created_at, updated_at
 FROM players
-WHERE virtual_id = $1
+WHERE virtual_id = ?
 LIMIT 1
 `
 

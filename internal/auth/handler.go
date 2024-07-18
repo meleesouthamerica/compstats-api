@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"github.com/splorg/compstats-api/internal/config"
 	"github.com/splorg/compstats-api/internal/database"
 	"github.com/splorg/compstats-api/internal/util"
@@ -30,13 +29,17 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	_, err := h.DB.FindUserByEmail(c.Context(), req.Email)
+	if err == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "email already in use"})
+	}
+
 	password, err := util.HashPassword([]byte(req.Password))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to encrypt password"})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to encrypt password"})
 	}
 
 	newUser, err := h.DB.CreateUser(c.Context(), database.CreateUserParams{
-		ID:        uuid.New(),
 		Name:      req.Name,
 		Password:  string(password),
 		Email:     req.Email,
@@ -67,7 +70,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	}
 
 	if err := util.ComparePassword([]byte(foundUser.Password), []byte(req.Password)); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
 
   s, _ := h.Store.Get(c)
@@ -75,7 +78,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
   if s.Fresh() {
     sid := s.ID()
   
-    uid := foundUser.ID.String()
+    uid := foundUser.ID
   
     s.Set("uid", uid)
     s.Set("sid", sid)

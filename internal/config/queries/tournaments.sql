@@ -4,19 +4,19 @@ ORDER BY id DESC;
 
 -- name: GetTournamentByID :one
 SELECT * FROM tournaments
-WHERE id = $1;
+WHERE id = ?;
 
 -- name: CreateTournament :one
 INSERT INTO tournaments (
   name,
   created_at
-) VALUES ($1, $2) RETURNING *;
+) VALUES (?, ?) RETURNING *;
 
 -- name: UpdateTournamentByID :one
 UPDATE tournaments
-SET name = $1, updated_at = $2
-WHERE id = $3
+SET name = ?, updated_at = ?
+WHERE id = ?
 RETURNING *;
 
 -- name: DeleteTournamentByID :exec
-DELETE FROM tournaments WHERE id = $1;
+DELETE FROM tournaments WHERE id = ?;

@@ -15,7 +15,7 @@ const createTournament = `-- name: CreateTournament :one
 INSERT INTO tournaments (
   name,
   created_at
-) VALUES ($1, $2) RETURNING id, name, created_at, updated_at
+) VALUES (?, ?) RETURNING id, name, created_at, updated_at
 `
 
 type CreateTournamentParams struct {
@@ -36,10 +36,10 @@ func (q *Queries) CreateTournament(ctx context.Context, arg CreateTournamentPara
 }
 
 const deleteTournamentByID = `-- name: DeleteTournamentByID :exec
-DELETE FROM tournaments WHERE id = $1
+DELETE FROM tournaments WHERE id = ?
 `
 
-func (q *Queries) DeleteTournamentByID(ctx context.Context, id int32) error {
+func (q *Queries) DeleteTournamentByID(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteTournamentByID, id)
 	return err
 }
@@ -79,10 +79,10 @@ func (q *Queries) GetAllTournaments(ctx context.Context) ([]Tournament, error) {
 
 const getTournamentByID = `-- name: GetTournamentByID :one
 SELECT id, name, created_at, updated_at FROM tournaments
-WHERE id = $1
+WHERE id = ?
 `
 
-func (q *Queries) GetTournamentByID(ctx context.Context, id int32) (Tournament, error) {
+func (q *Queries) GetTournamentByID(ctx context.Context, id int64) (Tournament, error) {
 	row := q.db.QueryRowContext(ctx, getTournamentByID, id)
 	var i Tournament
 	err := row.Scan(
@@ -96,15 +96,15 @@ func (q *Queries) GetTournamentByID(ctx context.Context, id int32) (Tournament, 
 
 const updateTournamentByID = `-- name: UpdateTournamentByID :one
 UPDATE tournaments
-SET name = $1, updated_at = $2
-WHERE id = $3
+SET name = ?, updated_at = ?
+WHERE id = ?
 RETURNING id, name, created_at, updated_at
 `
 
 type UpdateTournamentByIDParams struct {
 	Name      string       `json:"name"`
 	UpdatedAt sql.NullTime `json:"updatedAt"`
-	ID        int32        `json:"id"`
+	ID        int64        `json:"id"`
 }
 
 func (q *Queries) UpdateTournamentByID(ctx context.Context, arg UpdateTournamentByIDParams) (Tournament, error) {

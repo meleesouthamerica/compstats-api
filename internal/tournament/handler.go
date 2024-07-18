@@ -33,7 +33,7 @@ func (h *tournamentHandler) GetTournamentByID(c *fiber.Ctx) error {
 		return err
 	}
 
-	tournament, err := h.DB.GetTournamentByID(c.Context(), int32(tournamentId))
+	tournament, err := h.DB.GetTournamentByID(c.Context(), int64(tournamentId))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Tournament not found"})
 	}
@@ -71,7 +71,7 @@ func (h *tournamentHandler) UpdateTournament(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	tournament, err := h.DB.GetTournamentByID(c.Context(), int32(tournamentId))
+	tournament, err := h.DB.GetTournamentByID(c.Context(), int64(tournamentId))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Tournament not found"})
 	}
@@ -94,7 +94,7 @@ func (h *tournamentHandler) DeleteTournament(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = h.DB.DeleteTournamentByID(c.Context(), int32(tournamentId))
+	err = h.DB.DeleteTournamentByID(c.Context(), int64(tournamentId))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

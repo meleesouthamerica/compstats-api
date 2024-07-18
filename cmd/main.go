@@ -48,7 +48,7 @@ func main() {
 	sessionOnly.Patch("/tournaments/:id", tournamentsHandler.UpdateTournament)
 	sessionOnly.Delete("/tournaments/:id", tournamentsHandler.DeleteTournament)
 
-	// to be accessed from Bannerlord game server
+	// to be accessed from Bannerlord game server/Discord bots/etc
 	apiKeyOnly := app.Group("/server")
 	apiKeyOnly.Use(middleware.ApiKeyAuthentication())
 
