@@ -6,15 +6,18 @@ ORDER BY id DESC;
 SELECT * FROM tournaments
 WHERE id = ?;
 
+-- name: GetTournamentByName :one
+SELECT * FROM tournaments
+WHERE name = ?;
+
 -- name: CreateTournament :one
 INSERT INTO tournaments (
-  name,
-  created_at
-) VALUES (?, ?) RETURNING *;
+  name
+) VALUES (?) RETURNING *;
 
 -- name: UpdateTournamentByID :one
 UPDATE tournaments
-SET name = ?, updated_at = ?
+SET name = ?, updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
 RETURNING *;
 

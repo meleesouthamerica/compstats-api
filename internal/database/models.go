@@ -10,55 +10,56 @@ import (
 )
 
 type Half struct {
-	ID           int64        `json:"id"`
-	MapName      string       `json:"mapName"`
-	AttackerTeam string       `json:"attackerTeam"`
-	DefenderTeam string       `json:"defenderTeam"`
-	CreatedAt    time.Time    `json:"createdAt"`
-	UpdatedAt    sql.NullTime `json:"updatedAt"`
+	ID           int64     `json:"id"`
+	MapName      string    `json:"mapName"`
+	Team1        string    `json:"team1"`
+	Team2        string    `json:"team2"`
+	TournamentID int64     `json:"tournamentId"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 type Player struct {
-	ID        int64        `json:"id"`
-	Name      string       `json:"name"`
-	VirtualID string       `json:"virtualId"`
-	CreatedAt time.Time    `json:"createdAt"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	VirtualID string    `json:"virtualId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Stat struct {
-	ID        int64        `json:"id"`
-	PlayerID  int64        `json:"playerId"`
-	HalfID    int64        `json:"halfId"`
-	Kills     int64        `json:"kills"`
-	Deaths    int64        `json:"deaths"`
-	Assists   int64        `json:"assists"`
-	Score     int64        `json:"score"`
-	Winner    sql.NullBool `json:"winner"`
-	CreatedAt time.Time    `json:"createdAt"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
+	ID        int64     `json:"id"`
+	PlayerID  int64     `json:"playerId"`
+	HalfID    int64     `json:"halfId"`
+	Kills     int64     `json:"kills"`
+	Deaths    int64     `json:"deaths"`
+	Assists   int64     `json:"assists"`
+	Score     int64     `json:"score"`
+	Winner    bool      `json:"winner"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Team struct {
-	ID        int64        `json:"id"`
-	Name      string       `json:"name"`
-	CreatedAt time.Time    `json:"createdAt"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Teamplayer struct {
-	ID        int64        `json:"id"`
-	PlayerID  int64        `json:"playerId"`
-	TeamID    int64        `json:"teamId"`
-	CreatedAt time.Time    `json:"createdAt"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
+	ID        int64     `json:"id"`
+	PlayerID  int64     `json:"playerId"`
+	TeamID    int64     `json:"teamId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Tournament struct {
-	ID        int64        `json:"id"`
-	Name      string       `json:"name"`
-	CreatedAt time.Time    `json:"createdAt"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Tournamentteam struct {
@@ -67,7 +68,7 @@ type Tournamentteam struct {
 	TournamentID int64        `json:"tournamentId"`
 	IsWinner     sql.NullBool `json:"isWinner"`
 	CreatedAt    time.Time    `json:"createdAt"`
-	UpdatedAt    sql.NullTime `json:"updatedAt"`
+	UpdatedAt    time.Time    `json:"updatedAt"`
 }
 
 type User struct {

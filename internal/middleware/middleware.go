@@ -3,24 +3,24 @@ package middleware
 import (
 	"crypto/sha256"
 	"crypto/subtle"
-	"os"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/keyauth"
 	"github.com/splorg/compstats-api/internal/config"
 )
 
-var apiKey = os.Getenv("API_KEY")
+func newApiKeyValidator(apiKey string) func(c *fiber.Ctx, key string) (bool, error) {
+	return func(c *fiber.Ctx, key string) (bool, error) {
+		hashedAPIKey := sha256.Sum256([]byte(apiKey))
+		hashedKey := sha256.Sum256([]byte(key))
 
-func validateAPIKey(c *fiber.Ctx, key string) (bool, error) {
-	hashedAPIKey := sha256.Sum256([]byte(apiKey))
-	hashedKey := sha256.Sum256([]byte(key))
+		if subtle.ConstantTimeCompare(hashedAPIKey[:], hashedKey[:]) == 1 {
+			return true, nil
+		}
 
-	if subtle.ConstantTimeCompare(hashedAPIKey[:], hashedKey[:]) == 1 {
-		return true, nil
+		return false, keyauth.ErrMissingOrMalformedAPIKey
 	}
-
-	return false, keyauth.ErrMissingOrMalformedAPIKey
 }
 
 type middleware struct {
@@ -45,9 +45,13 @@ func (m *middleware) SessionAuthentication(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func (m *middleware) ApiKeyAuthentication() func(*fiber.Ctx) error {
+func (m *middleware) NewApiKeyAuthentication(key string) func(*fiber.Ctx) error {
+	if key == "" {
+		log.Fatal("API_KEY not defined in .env")
+	}
+
 	return keyauth.New(keyauth.Config{
 		KeyLookup: "header:X-API-KEY",
-		Validator: validateAPIKey,
+		Validator: newApiKeyValidator(key),
 	})
 }

@@ -1,9 +1,6 @@
 package tournament
 
 import (
-	"database/sql"
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/splorg/compstats-api/internal/config"
 	"github.com/splorg/compstats-api/internal/database"
@@ -23,6 +20,9 @@ func (h *tournamentHandler) GetAllTournaments(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
+	if tournaments == nil {
+		tournaments = []database.Tournament{}
+	}
 
 	return c.Status(fiber.StatusOK).JSON(tournaments)
 }
@@ -35,7 +35,7 @@ func (h *tournamentHandler) GetTournamentByID(c *fiber.Ctx) error {
 
 	tournament, err := h.DB.GetTournamentByID(c.Context(), int64(tournamentId))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Tournament not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "tournament not found"})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(tournament)
@@ -44,16 +44,14 @@ func (h *tournamentHandler) GetTournamentByID(c *fiber.Ctx) error {
 func (h *tournamentHandler) CreateTournament(c *fiber.Ctx) error {
 	var req createUpdateDTO
 
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	newTournament, err := h.DB.CreateTournament(c.Context(), database.CreateTournamentParams{
-		Name:      req.Name,
-		CreatedAt: time.Now(),
-	})
+	err := util.ValidateRequestBody(c, &req)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return err
+	} 
+
+	newTournament, err := h.DB.CreateTournament(c.Context(), req.Name)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "tournament name must be unique"})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(newTournament)
@@ -67,19 +65,19 @@ func (h *tournamentHandler) UpdateTournament(c *fiber.Ctx) error {
 
 	var req createUpdateDTO
 
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
-	}
+	err = util.ValidateRequestBody(c, &req)
+	if err != nil {
+		return err
+	} 
 
 	tournament, err := h.DB.GetTournamentByID(c.Context(), int64(tournamentId))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Tournament not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "tournament not found"})
 	}
 
 	updatedTournament, err := h.DB.UpdateTournamentByID(c.Context(), database.UpdateTournamentByIDParams{
-		Name: req.Name,
-		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
-		ID: tournament.ID,
+		Name:      req.Name,
+		ID:        tournament.ID,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -94,10 +92,15 @@ func (h *tournamentHandler) DeleteTournament(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = h.DB.DeleteTournamentByID(c.Context(), int64(tournamentId))
+	tournament, err := h.DB.GetTournamentByID(c.Context(), int64(tournamentId))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "tournament not found"})
 	}
 
-	return c.SendStatus(fiber.StatusNoContent)
+	err = h.DB.DeleteTournamentByID(c.Context(), tournament.ID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete tournament"})
+	}
+
+	return c.SendStatus(fiber.StatusOK)
 }

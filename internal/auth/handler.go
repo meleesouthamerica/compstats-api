@@ -7,7 +7,6 @@ import (
 	"github.com/splorg/compstats-api/internal/config"
 	"github.com/splorg/compstats-api/internal/database"
 	"github.com/splorg/compstats-api/internal/util"
-	"github.com/splorg/compstats-api/internal/validator"
 )
 
 type AuthHandler struct {
@@ -21,17 +20,9 @@ func NewAuthHandler(config *config.ApiConfig) *AuthHandler {
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req registerDTO
 
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	_, err := h.DB.FindUserByEmail(c.Context(), req.Email)
-	if err == nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "email already in use"})
+	err := util.ValidateRequestBody(c, &req)
+	if err != nil {
+		return err
 	}
 
 	password, err := util.HashPassword([]byte(req.Password))
@@ -40,14 +31,12 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	}
 
 	newUser, err := h.DB.CreateUser(c.Context(), database.CreateUserParams{
-		Name:      req.Name,
-		Password:  string(password),
-		Email:     req.Email,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Name:     req.Name,
+		Password: string(password),
+		Email:    req.Email,
 	})
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "credentials already in use"})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(newUser)
@@ -56,12 +45,9 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req loginDTO
 
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	err := util.ValidateRequestBody(c, &req)
+	if err != nil {
+		return err
 	}
 
 	foundUser, err := h.DB.FindUserByEmail(c.Context(), req.Email)
@@ -73,30 +59,30 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
 	}
 
-  s, _ := h.Store.Get(c)
+	s, _ := h.Store.Get(c)
 
-  if s.Fresh() {
-    sid := s.ID()
-  
-    uid := foundUser.ID
-  
-    s.Set("uid", uid)
-    s.Set("sid", sid)
-    s.Set("ip", c.Context().RemoteIP().String())
-    s.Set("login", time.Unix(time.Now().Unix(), 0).UTC().String())
-    s.Set("ua", string(c.Request().Header.UserAgent()))
-  
-    err = s.Save()
-    if err != nil {
-      return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-    }
-  }
+	if s.Fresh() {
+		sid := s.ID()
 
-  return c.Status(fiber.StatusOK).JSON(foundUser)
+		uid := foundUser.ID
+
+		s.Set("uid", uid)
+		s.Set("sid", sid)
+		s.Set("ip", c.Context().RemoteIP().String())
+		s.Set("login", time.Unix(time.Now().Unix(), 0).UTC().String())
+		s.Set("ua", string(c.Request().Header.UserAgent()))
+
+		err = s.Save()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(foundUser)
 }
 
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
-  s, _ := h.Store.Get(c)
+	s, _ := h.Store.Get(c)
 
 	s.Destroy()
 

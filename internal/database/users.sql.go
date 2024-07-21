@@ -7,35 +7,24 @@ package database
 
 import (
 	"context"
-	"time"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   name,
   email,
-  password,
-  created_at,
-  updated_at
-) VALUES (?, ?, ?, ?, ?) RETURNING id, name, email, password, created_at, updated_at
+  password
+) VALUES (?, ?, ?) RETURNING id, name, email, password, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
-		arg.Name,
-		arg.Email,
-		arg.Password,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	row := q.db.QueryRowContext(ctx, createUser, arg.Name, arg.Email, arg.Password)
 	var i User
 	err := row.Scan(
 		&i.ID,

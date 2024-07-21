@@ -8,32 +8,22 @@ package database
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const createPlayer = `-- name: CreatePlayer :one
 INSERT INTO players (
   name,
-  virtual_id,
-  created_at,
-  updated_at
-) VALUES (?, ?, ?, ?) RETURNING id, name, virtual_id, created_at, updated_at
+  virtual_id
+) VALUES (?, ?) RETURNING id, name, virtual_id, created_at, updated_at
 `
 
 type CreatePlayerParams struct {
-	Name      string       `json:"name"`
-	VirtualID string       `json:"virtualId"`
-	CreatedAt time.Time    `json:"createdAt"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
+	Name      string `json:"name"`
+	VirtualID string `json:"virtualId"`
 }
 
 func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error) {
-	row := q.db.QueryRowContext(ctx, createPlayer,
-		arg.Name,
-		arg.VirtualID,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	row := q.db.QueryRowContext(ctx, createPlayer, arg.Name, arg.VirtualID)
 	var i Player
 	err := row.Scan(
 		&i.ID,
@@ -43,6 +33,15 @@ func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Pla
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const deletePlayerByID = `-- name: DeletePlayerByID :exec
+DELETE FROM players WHERE id = ?
+`
+
+func (q *Queries) DeletePlayerByID(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deletePlayerByID, id)
+	return err
 }
 
 const findPlayerByID = `-- name: FindPlayerByID :one
@@ -74,6 +73,69 @@ LIMIT 1
 
 func (q *Queries) FindPlayerByVirtualID(ctx context.Context, virtualID string) (Player, error) {
 	row := q.db.QueryRowContext(ctx, findPlayerByVirtualID, virtualID)
+	var i Player
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.VirtualID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getAllPlayers = `-- name: GetAllPlayers :many
+SELECT id, name, virtual_id, created_at, updated_at FROM players
+ORDER BY id DESC
+`
+
+func (q *Queries) GetAllPlayers(ctx context.Context) ([]Player, error) {
+	rows, err := q.db.QueryContext(ctx, getAllPlayers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Player
+	for rows.Next() {
+		var i Player
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.VirtualID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updatePlayerByID = `-- name: UpdatePlayerByID :one
+UPDATE players
+SET
+  name = COALESCE(?1, name),
+  virtual_id = COALESCE(?2, virtual_id),
+  updated_at = CURRENT_TIMESTAMP
+WHERE id = ?3
+RETURNING id, name, virtual_id, created_at, updated_at
+`
+
+type UpdatePlayerByIDParams struct {
+	Name      sql.NullString `json:"name"`
+	VirtualID sql.NullString `json:"virtualId"`
+	ID        int64          `json:"id"`
+}
+
+func (q *Queries) UpdatePlayerByID(ctx context.Context, arg UpdatePlayerByIDParams) (Player, error) {
+	row := q.db.QueryRowContext(ctx, updatePlayerByID, arg.Name, arg.VirtualID, arg.ID)
 	var i Player
 	err := row.Scan(
 		&i.ID,

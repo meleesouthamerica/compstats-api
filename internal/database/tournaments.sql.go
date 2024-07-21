@@ -7,24 +7,16 @@ package database
 
 import (
 	"context"
-	"database/sql"
-	"time"
 )
 
 const createTournament = `-- name: CreateTournament :one
 INSERT INTO tournaments (
-  name,
-  created_at
-) VALUES (?, ?) RETURNING id, name, created_at, updated_at
+  name
+) VALUES (?) RETURNING id, name, created_at, updated_at
 `
 
-type CreateTournamentParams struct {
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"createdAt"`
-}
-
-func (q *Queries) CreateTournament(ctx context.Context, arg CreateTournamentParams) (Tournament, error) {
-	row := q.db.QueryRowContext(ctx, createTournament, arg.Name, arg.CreatedAt)
+func (q *Queries) CreateTournament(ctx context.Context, name string) (Tournament, error) {
+	row := q.db.QueryRowContext(ctx, createTournament, name)
 	var i Tournament
 	err := row.Scan(
 		&i.ID,
@@ -94,21 +86,37 @@ func (q *Queries) GetTournamentByID(ctx context.Context, id int64) (Tournament, 
 	return i, err
 }
 
+const getTournamentByName = `-- name: GetTournamentByName :one
+SELECT id, name, created_at, updated_at FROM tournaments
+WHERE name = ?
+`
+
+func (q *Queries) GetTournamentByName(ctx context.Context, name string) (Tournament, error) {
+	row := q.db.QueryRowContext(ctx, getTournamentByName, name)
+	var i Tournament
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateTournamentByID = `-- name: UpdateTournamentByID :one
 UPDATE tournaments
-SET name = ?, updated_at = ?
+SET name = ?, updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
 RETURNING id, name, created_at, updated_at
 `
 
 type UpdateTournamentByIDParams struct {
-	Name      string       `json:"name"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
-	ID        int64        `json:"id"`
+	Name string `json:"name"`
+	ID   int64  `json:"id"`
 }
 
 func (q *Queries) UpdateTournamentByID(ctx context.Context, arg UpdateTournamentByIDParams) (Tournament, error) {
-	row := q.db.QueryRowContext(ctx, updateTournamentByID, arg.Name, arg.UpdatedAt, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateTournamentByID, arg.Name, arg.ID)
 	var i Tournament
 	err := row.Scan(
 		&i.ID,

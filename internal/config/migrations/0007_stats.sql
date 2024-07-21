@@ -7,9 +7,9 @@ CREATE TABLE stats (
   deaths integer NOT NULL,
   assists integer NOT NULL,
   score integer NOT NULL,
-  winner boolean,
-  created_at datetime NOT NULL,
-  updated_at datetime,
+  winner boolean NOT NULL DEFAULT FALSE,
+  created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (player_id) REFERENCES players(id),
   FOREIGN KEY (half_id) REFERENCES halfs(id)
 );

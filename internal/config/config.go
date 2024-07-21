@@ -59,6 +59,7 @@ func NewApiConfig() (*ApiConfig, error) {
 		Storage:    storage,
 		Expiration: 7 * 24 * time.Hour,
 		KeyLookup:  "cookie:session_id",
+		CookieHTTPOnly: true,
 	})
 
 	apiConfig := &ApiConfig{
