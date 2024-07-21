@@ -126,7 +126,10 @@ func (h *playerHandler) UpdatePlayerStats(c *fiber.Ctx) error {
 
 	currentTournament, err := h.DB.GetTournamentByName(c.Context(), req.TournamentName)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "tournament not found"})
+		currentTournament, err = h.DB.CreateTournament(c.Context(), req.TournamentName)
+		if err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "failed to save tournament"})
+		}
 	}
 
 	half, err := h.DB.CreateHalf(c.Context(), database.CreateHalfParams{
