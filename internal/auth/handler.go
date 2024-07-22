@@ -7,6 +7,7 @@ import (
 	"github.com/splorg/compstats-api/internal/config"
 	"github.com/splorg/compstats-api/internal/database"
 	"github.com/splorg/compstats-api/internal/util"
+	"github.com/splorg/compstats-api/internal/validator"
 )
 
 type AuthHandler struct {
@@ -20,9 +21,12 @@ func NewAuthHandler(config *config.ApiConfig) *AuthHandler {
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req registerDTO
 
-	err := util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	password, err := util.HashPassword([]byte(req.Password))
@@ -45,9 +49,12 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req loginDTO
 
-	err := util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	foundUser, err := h.DB.FindUserByEmail(c.Context(), req.Email)

@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/splorg/compstats-api/internal/validator"
 )
 
 func GetIDFromParams(c *fiber.Ctx) (int, error) {
@@ -19,16 +18,4 @@ func GetIDFromParams(c *fiber.Ctx) (int, error) {
 	}
 
 	return id, nil
-}
-
-func ValidateRequestBody(c *fiber.Ctx, req interface{}) error {
-	if err := c.BodyParser(req); err != nil {
-		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return nil
 }

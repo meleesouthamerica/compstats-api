@@ -7,6 +7,7 @@ import (
 	"github.com/splorg/compstats-api/internal/config"
 	"github.com/splorg/compstats-api/internal/database"
 	"github.com/splorg/compstats-api/internal/util"
+	"github.com/splorg/compstats-api/internal/validator"
 )
 
 type halfHandler struct {
@@ -20,10 +21,13 @@ func NewHalfHandler(cfg *config.ApiConfig) *halfHandler {
 func (h *halfHandler) CreateHalf(c *fiber.Ctx) error {
 	var req createHalfDTO
 
-	err := util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
-	} 
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
 
 	tournament, err := h.DB.GetTournamentByID(c.Context(), int64(req.TournamentID))
 	if err != nil {
@@ -77,9 +81,12 @@ func (h *halfHandler) UpdateHalf(c *fiber.Ctx) error {
 
 	var req updateHalfDTO
 
-	err = util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	half, err := h.DB.FindHalfByID(c.Context(), int64(halfId))
@@ -89,9 +96,9 @@ func (h *halfHandler) UpdateHalf(c *fiber.Ctx) error {
 
 	updatedHalf, err := h.DB.UpdateHalfByID(c.Context(), database.UpdateHalfByIDParams{
 		MapName: sql.NullString{String: req.MapName, Valid: req.MapName != ""},
-		Team1: sql.NullString{String: req.Team1, Valid: req.Team1 != ""},
-		Team2: sql.NullString{String: req.Team2, Valid: req.Team2 != ""},
-		ID: half.ID,
+		Team1:   sql.NullString{String: req.Team1, Valid: req.Team1 != ""},
+		Team2:   sql.NullString{String: req.Team2, Valid: req.Team2 != ""},
+		ID:      half.ID,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update half"})

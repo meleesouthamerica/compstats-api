@@ -5,6 +5,7 @@ import (
 	"github.com/splorg/compstats-api/internal/config"
 	"github.com/splorg/compstats-api/internal/database"
 	"github.com/splorg/compstats-api/internal/util"
+	"github.com/splorg/compstats-api/internal/validator"
 )
 
 type tournamentHandler struct {
@@ -44,10 +45,13 @@ func (h *tournamentHandler) GetTournamentByID(c *fiber.Ctx) error {
 func (h *tournamentHandler) CreateTournament(c *fiber.Ctx) error {
 	var req createUpdateDTO
 
-	err := util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
-	} 
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
 
 	newTournament, err := h.DB.CreateTournament(c.Context(), req.Name)
 	if err != nil {
@@ -65,10 +69,13 @@ func (h *tournamentHandler) UpdateTournament(c *fiber.Ctx) error {
 
 	var req createUpdateDTO
 
-	err = util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
-	} 
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
 
 	tournament, err := h.DB.GetTournamentByID(c.Context(), int64(tournamentId))
 	if err != nil {
@@ -76,8 +83,8 @@ func (h *tournamentHandler) UpdateTournament(c *fiber.Ctx) error {
 	}
 
 	updatedTournament, err := h.DB.UpdateTournamentByID(c.Context(), database.UpdateTournamentByIDParams{
-		Name:      req.Name,
-		ID:        tournament.ID,
+		Name: req.Name,
+		ID:   tournament.ID,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})

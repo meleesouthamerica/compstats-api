@@ -21,9 +21,12 @@ func NewPlayerHandler(cfg *config.ApiConfig) *playerHandler {
 func (h *playerHandler) CreatePlayer(c *fiber.Ctx) error {
 	var req createDTO
 
-	err := util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	player, err := h.DB.CreatePlayer(c.Context(), database.CreatePlayerParams{
@@ -71,9 +74,12 @@ func (h *playerHandler) UpdatePlayer(c *fiber.Ctx) error {
 
 	var req updateDTO
 
-	err = util.ValidateRequestBody(c, &req)
-	if err != nil {
-		return err
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	player, err := h.DB.FindPlayerByID(c.Context(), int64(playerId))
