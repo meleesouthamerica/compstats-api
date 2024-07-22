@@ -18,6 +18,17 @@ func NewAuthHandler(config *config.ApiConfig) *AuthHandler {
 	return &AuthHandler{ApiConfig: config}
 }
 
+// Register godoc
+//
+//	@Summary		Register
+//	@Description	user registration
+//	@Accept			json
+//	@Produce		json
+//
+// @Param dto body auth.registerDTO true "register json"
+//
+//	@Success		201	{object}	database.User
+//	@Router			/auth/register [post]
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var req registerDTO
 
@@ -46,6 +57,17 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(newUser)
 }
 
+// Login godoc
+//
+//	@Summary		Login
+//	@Description	user login
+//	@Accept			json
+//	@Produce		json
+//
+// @Param dto body auth.loginDTO true "login json"
+//
+//	@Success		200	{object}	database.User
+//	@Router			/auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req loginDTO
 
@@ -88,10 +110,17 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(foundUser)
 }
 
+// Logout godoc
+//
+//	@Summary		Logout
+//	@Description	User logout route
+//	@Accept			json
+//	@Produce		json
+//	@Router			/auth/logout [post]
 func (h *AuthHandler) Logout(c *fiber.Ctx) error {
 	s, _ := h.Store.Get(c)
 
 	s.Destroy()
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "logged out successfully"})
+	return c.Status(fiber.StatusOK).JSON(authResponse{Message: "logged out successfully"})
 }

@@ -1,0 +1,536 @@
+definitions:
+  auth.loginDTO:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.registerDTO:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  database.Half:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      mapName:
+        type: string
+      team1:
+        type: string
+      team2:
+        type: string
+      tournamentId:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  database.Player:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+      virtualId:
+        type: string
+    type: object
+  database.Tournament:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  database.User:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  half.createDTO:
+    properties:
+      gameType:
+        type: string
+      mapName:
+        type: string
+      team1:
+        type: string
+      team2:
+        type: string
+      tournamentId:
+        type: integer
+    required:
+    - gameType
+    - mapName
+    - team1
+    - team2
+    - tournamentId
+    type: object
+  half.updateDTO:
+    properties:
+      mapName:
+        type: string
+      team1:
+        type: string
+      team2:
+        type: string
+    type: object
+  player.createDTO:
+    properties:
+      name:
+        type: string
+      virtual_id:
+        type: string
+    required:
+    - name
+    - virtual_id
+    type: object
+  player.playerStats:
+    properties:
+      assists:
+        type: integer
+      deaths:
+        type: integer
+      kills:
+        type: integer
+      score:
+        type: integer
+      win:
+        type: boolean
+    required:
+    - assists
+    - deaths
+    - kills
+    - score
+    - win
+    type: object
+  player.playerToBeUpdated:
+    properties:
+      name:
+        type: string
+      stats:
+        $ref: '#/definitions/player.playerStats'
+      virtual_id:
+        type: string
+    required:
+    - name
+    - stats
+    - virtual_id
+    type: object
+  player.updateDTO:
+    properties:
+      name:
+        type: string
+      virtual_id:
+        type: string
+    type: object
+  player.updateStatsDTO:
+    properties:
+      gameType:
+        type: string
+      mapName:
+        type: string
+      players:
+        items:
+          $ref: '#/definitions/player.playerToBeUpdated'
+        type: array
+      team1:
+        type: string
+      team2:
+        type: string
+      tournamentName:
+        type: string
+    required:
+    - gameType
+    - mapName
+    - players
+    - team1
+    - team2
+    - tournamentName
+    type: object
+  player.updateStatsResponse:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+  tournament.createUpdateDTO:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+info:
+  contact: {}
+  description: REST API for CompStats - stat tracking for online melee game tournaments.
+  title: CompStats API
+  version: "1.0"
+paths:
+  /admin/halfs:
+    get:
+      consumes:
+      - application/json
+      description: get all halfs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/database.Half'
+            type: array
+      summary: Halfs
+    post:
+      consumes:
+      - application/json
+      description: create a half
+      parameters:
+      - description: create json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/half.createDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Half'
+      summary: Create half
+  /admin/halfs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete half by id
+      parameters:
+      - description: Half ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete a half
+    get:
+      description: get half by ID
+      parameters:
+      - description: Half ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Half'
+      summary: Get a half
+    patch:
+      consumes:
+      - application/json
+      description: update half by id
+      parameters:
+      - description: Half ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: update json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/half.updateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Half'
+      summary: Update a half
+  /admin/players:
+    get:
+      consumes:
+      - application/json
+      description: get all players
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/database.Player'
+            type: array
+      summary: Players
+    post:
+      consumes:
+      - application/json
+      description: create a player
+      parameters:
+      - description: create json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/player.createDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Player'
+      summary: Create player
+  /admin/players/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete player by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete a player
+    get:
+      description: get player by ID
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Player'
+      summary: Get a player
+    patch:
+      consumes:
+      - application/json
+      description: update player by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: update json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/player.updateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Player'
+      summary: Update a player
+  /admin/tournaments:
+    get:
+      consumes:
+      - application/json
+      description: get all tournaments
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/database.Tournament'
+            type: array
+      summary: Tournaments
+    post:
+      consumes:
+      - application/json
+      description: create a tournament
+      parameters:
+      - description: create json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/tournament.createUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Tournament'
+      summary: Create tournament
+  /admin/tournaments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete tournament by id
+      parameters:
+      - description: Tournament ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Delete a tournament
+    get:
+      description: get tournament by ID
+      parameters:
+      - description: Tournament ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Tournament'
+      summary: Get a tournament
+    patch:
+      consumes:
+      - application/json
+      description: update tournament by id
+      parameters:
+      - description: Tournament ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: update json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/tournament.createUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Tournament'
+      summary: Update a tournament
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: user login
+      parameters:
+      - description: login json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/auth.loginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+      summary: Login
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: User logout route
+      produces:
+      - application/json
+      responses: {}
+      summary: Logout
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: user registration
+      parameters:
+      - description: register json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/auth.registerDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.User'
+      summary: Register
+  /stats:
+    post:
+      consumes:
+      - application/json
+      description: save half, players and stats from game server
+      parameters:
+      - description: update stats json
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/player.updateStatsDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/player.updateStatsResponse'
+      summary: Update stats
+swagger: "2.0"

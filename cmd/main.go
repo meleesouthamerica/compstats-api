@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/swagger"
 
 	"github.com/splorg/compstats-api/internal/auth"
 	"github.com/splorg/compstats-api/internal/config"
@@ -14,10 +15,15 @@ import (
 	"github.com/splorg/compstats-api/internal/player"
 	"github.com/splorg/compstats-api/internal/tournament"
 	"github.com/splorg/compstats-api/internal/validator"
+	_ "github.com/splorg/compstats-api/docs"
 )
 
 var apiKey = os.Getenv("API_KEY")
 
+//	@title			CompStats API
+//	@version		1.0
+//	@description	REST API for CompStats - stat tracking for online melee game tournaments.
+//	@BasePath	/
 func main() {
 	validator.Setup()
 
@@ -28,6 +34,7 @@ func main() {
 
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{}))
+	app.Use("/swagger/*", swagger.HandlerDefault)
 
 	middleware := middleware.NewMiddleware(apiConfig)
 
@@ -36,9 +43,11 @@ func main() {
 	halfsHandler := half.NewHalfHandler(apiConfig)
 	playersHandler := player.NewPlayerHandler(apiConfig)
 
-	app.Post("/register", authHandler.Register)
-	app.Post("/login", authHandler.Login)
-	app.Post("/logout", authHandler.Logout)
+	publicGroup := app.Group("/auth")
+
+	publicGroup.Post("/register", authHandler.Register)
+	publicGroup.Post("/login", authHandler.Login)
+	publicGroup.Post("/logout", authHandler.Logout)
 
 	// regular CRUD routes - for manual use by admins
 	sessionOnly := app.Group("/admin")
@@ -66,9 +75,9 @@ func main() {
 	sessionOnly.Delete("/halfs/:id", halfsHandler.DeleteHalf)
 
 	// to be accessed from Bannerlord game server/Discord bots/etc
-	apiKeyOnly := app.Group("/server")
 	apiKeyAuthentication := middleware.NewApiKeyAuthentication(apiKey)
 
+	apiKeyOnly := app.Group("/")
 	apiKeyOnly.Use(apiKeyAuthentication)
 
 	apiKeyOnly.Get("/test", func(c *fiber.Ctx) error {

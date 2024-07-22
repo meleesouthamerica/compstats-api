@@ -32,3 +32,7 @@ type updateStatsDTO struct {
 	TournamentName string              `json:"tournamentName" validate:"required"`
 	Players        []playerToBeUpdated `json:"players" validate:"required"`
 }
+
+type updateStatsResponse struct {
+	Message string `json:"message" validate:"required"`
+}

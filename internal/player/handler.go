@@ -18,6 +18,17 @@ func NewPlayerHandler(cfg *config.ApiConfig) *playerHandler {
 	return &playerHandler{ApiConfig: cfg}
 }
 
+// CreatePlayer godoc
+//
+//	@Summary		Create player
+//	@Description	create a player
+//	@Accept			json
+//	@Produce		json
+//
+// @Param dto body player.createDTO true "create json"
+//
+//	@Success		201	{object}	database.Player
+//	@Router			/admin/players [post]
 func (h *playerHandler) CreatePlayer(c *fiber.Ctx) error {
 	var req createDTO
 
@@ -40,6 +51,15 @@ func (h *playerHandler) CreatePlayer(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(player)
 }
 
+// GetAllPlayers godoc
+//
+//	@Summary		Players
+//	@Description	get all players
+//	@Accept			json
+//	@Produce		json
+//
+//	@Success		200	{array}	database.Player
+//	@Router			/admin/players [get]
 func (h *playerHandler) GetAllPlayers(c *fiber.Ctx) error {
 	players, err := h.DB.GetAllPlayers(c.Context())
 	if err != nil {
@@ -52,6 +72,14 @@ func (h *playerHandler) GetAllPlayers(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(players)
 }
 
+// GetPlayerByID godoc
+//
+//	@Summary		Get a player
+//	@Description	get player by ID
+//	@Produce		json
+//	@Param			id	path		int	true	"Player ID"
+//	@Success		200	{object}	database.Player
+//	@Router			/admin/players/{id} [get]
 func (h *playerHandler) GetPlayerByID(c *fiber.Ctx) error {
 	playerId, err := util.GetIDFromParams(c)
 	if err != nil {
@@ -66,6 +94,16 @@ func (h *playerHandler) GetPlayerByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(player)
 }
 
+// UpdatePlayer godoc
+//
+//	@Summary		Update a player
+//	@Description	update player by id
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int					true	"Player ID"
+//	@Param			dto	body		player.updateDTO	true	"update json"
+//	@Success		200		{object}	database.Player
+//	@Router			/admin/players/{id} [patch]
 func (h *playerHandler) UpdatePlayer(c *fiber.Ctx) error {
 	playerId, err := util.GetIDFromParams(c)
 	if err != nil {
@@ -99,6 +137,14 @@ func (h *playerHandler) UpdatePlayer(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(updatedPlayer)
 }
 
+// DeletePlayer godoc
+//
+//	@Summary		Delete a player
+//	@Description	delete player by id
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int					true	"Player ID"
+//	@Router			/admin/players/{id} [delete]
 func (h *playerHandler) DeletePlayer(c *fiber.Ctx) error {
 	playerId, err := util.GetIDFromParams(c)
 	if err != nil {
@@ -118,7 +164,17 @@ func (h *playerHandler) DeletePlayer(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-// save half and batch update player stats after game mission ends
+// UpdatePlayerStats godoc
+//
+//	@Summary		Update stats
+//	@Description	save half, players and stats from game server
+//	@Accept			json
+//	@Produce		json
+//
+// @Param dto body player.updateStatsDTO true "update stats json"
+//
+//	@Success		201	{object}	player.updateStatsResponse
+//	@Router			/stats [post]
 func (h *playerHandler) UpdatePlayerStats(c *fiber.Ctx) error {
 	var req updateStatsDTO
 
@@ -174,5 +230,5 @@ func (h *playerHandler) UpdatePlayerStats(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "players stats updated successfully"})
+	return c.Status(fiber.StatusCreated).JSON(updateStatsResponse{Message: "players stats updated successfully"})
 }

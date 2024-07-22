@@ -18,8 +18,19 @@ func NewHalfHandler(cfg *config.ApiConfig) *halfHandler {
 	return &halfHandler{ApiConfig: cfg}
 }
 
+// CreateHalf godoc
+//
+//	@Summary		Create half
+//	@Description	create a half
+//	@Accept			json
+//	@Produce		json
+//
+// @Param dto body half.createDTO true "create json"
+//
+//	@Success		201	{object}	database.Half
+//	@Router			/admin/halfs [post]
 func (h *halfHandler) CreateHalf(c *fiber.Ctx) error {
-	var req createHalfDTO
+	var req createDTO
 
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
@@ -47,6 +58,15 @@ func (h *halfHandler) CreateHalf(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(half)
 }
 
+// GetAllHalfs godoc
+//
+//	@Summary		Halfs
+//	@Description	get all halfs
+//	@Accept			json
+//	@Produce		json
+//
+//	@Success		200	{array}	database.Half
+//	@Router			/admin/halfs [get]
 func (h *halfHandler) GetAllHalfs(c *fiber.Ctx) error {
 	halfs, err := h.DB.GetAllHalfs(c.Context())
 	if err != nil {
@@ -59,6 +79,14 @@ func (h *halfHandler) GetAllHalfs(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(halfs)
 }
 
+// GetHalfByID godoc
+//
+//	@Summary		Get a half
+//	@Description	get half by ID
+//	@Produce		json
+//	@Param			id	path		int	true	"Half ID"
+//	@Success		200	{object}	database.Half
+//	@Router			/admin/halfs/{id} [get]
 func (h *halfHandler) GetHalfByID(c *fiber.Ctx) error {
 	halfId, err := util.GetIDFromParams(c)
 	if err != nil {
@@ -73,13 +101,23 @@ func (h *halfHandler) GetHalfByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(half)
 }
 
+// UpdateHalf godoc
+//
+//	@Summary		Update a half
+//	@Description	update half by id
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int					true	"Half ID"
+//	@Param			dto	body		half.updateDTO	true	"update json"
+//	@Success		200		{object}	database.Half
+//	@Router			/admin/halfs/{id} [patch]
 func (h *halfHandler) UpdateHalf(c *fiber.Ctx) error {
 	halfId, err := util.GetIDFromParams(c)
 	if err != nil {
 		return err
 	}
 
-	var req updateHalfDTO
+	var req updateDTO
 
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
@@ -107,6 +145,14 @@ func (h *halfHandler) UpdateHalf(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(updatedHalf)
 }
 
+// DeleteHalf godoc
+//
+//	@Summary		Delete a half
+//	@Description	delete half by id
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int					true	"Half ID"
+//	@Router			/admin/halfs/{id} [delete]
 func (h *halfHandler) DeleteHalf(c *fiber.Ctx) error {
 	halfId, err := util.GetIDFromParams(c)
 	if err != nil {

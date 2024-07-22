@@ -1,6 +1,6 @@
 package half
 
-type createHalfDTO struct {
+type createDTO struct {
 	MapName      string `json:"mapName" validate:"required"`
 	Team1        string `json:"team1" validate:"required"`
 	Team2        string `json:"team2" validate:"required"`
@@ -8,7 +8,7 @@ type createHalfDTO struct {
 	TournamentID int    `json:"tournamentId" validate:"required"`
 }
 
-type updateHalfDTO struct {
+type updateDTO struct {
 	MapName      string `json:"mapName"`
 	Team1        string `json:"team1"`
 	Team2        string `json:"team2"`
